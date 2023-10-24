@@ -11,6 +11,56 @@ ingress:
     - name: ""
 
 postgresql:
-  # use sqlite instead
-  enabled: false
-  useSubChart: false
+  enabled: true
+  auth:
+    # -- determines whether an admin user is created within postgres
+    enablePostgresUser: false
+    # -- name for a custom database
+    database: server
+    # -- name for a custom user
+    username: prefect
+    ## This is the password for `username` and will be set within the secret `{fullnameOverride}-postgresql` at the key `password`.
+    ## This argument is only relevant when using the Postgres database included in the chart.
+    ## For an external postgres connection, you must create and use `existingSecret` instead.
+    # -- password for the custom user. Ignored if `auth.existingSecret` with key `password` is provided
+    password: prefect-rocks
+
+    ## This secret must contain two key-value pairs where the first key is `connection-string` and the value is the
+    ## connection string containing your password (e.g. postgresql+asyncpg://{username}:{password}@{hostname}/{database}).
+    ## The second key-value pair has the key `password` and the value is the {password} used in the connection string
+    # -- Name of existing secret to use for PostgreSQL credentials.
+    existingSecret: ""
+
+  # -- PostgreSQL container port
+  containerPorts:
+    postgresql: 5432
+
+  # externalHostname defines the address to contact an externally
+  # managed postgres database instance at. This is not required if
+  # `internalPostgres` is `true`
+  externalHostname: ""
+
+  # -- enable use of bitnami/postgresql subchart
+  useSubChart: true
+
+  ## postgresql configuration below here is only used if using the subchart
+
+  ## Initdb configuration
+  ## ref: https://github.com/bitnami/containers/tree/main/bitnami/postgresql#specifying-initdb-arguments
+  primary:
+    initdb:
+      # -- specify the PostgreSQL username to execute the initdb scripts
+      user: postgres
+
+    ## persistence enables a PVC that stores the database between deployments. If making changes to the database deployment, this
+    ## PVC will need to be deleted for database changes to take effect. This is especially notable when the authentication password
+    ## changes on redeploys. This is disabled by default because we do not recommend using the subchart deployment for production deployments.
+    persistence:
+      # -- enable PostgreSQL Primary data persistence using PVC
+      enabled: false
+      # -- PVC Storage Request for PostgreSQL volume
+      size: 8Gi
+
+  image:
+    # -- Version tag, corresponds to tags at https://hub.docker.com/r/bitnami/postgresql/
+    tag: 14.3.0

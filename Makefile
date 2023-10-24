@@ -1,25 +1,9 @@
 include *.mk
 
-export KUBECONFIG=$(HOME)/.k3d/kubeconfig-prefect.yaml
+export KUBECONFIG=$(HOME)/.kube/config
 
 ## create cluster and install minio and prefect
-kubes: cluster kubes-minio kubes-prefect
-
-## create k3s cluster
-cluster:
-# enable ephmeral containers for profiling
-# port 4200 on the host is mapped to ingress on port 80
-	k3d cluster create prefect --registry-create prefect-registry:0.0.0.0:5550 \
-		-p 4200:80@loadbalancer -p 9000:9000@loadbalancer -p 9001:9001@loadbalancer \
-		-p 10001:10001@loadbalancer -p 8265:8265@loadbalancer -p 6379:6379@loadbalancer \
-		--k3s-arg '--kube-apiserver-arg=feature-gates=EphemeralContainers=true@server:*' \
-  		--k3s-arg '--kube-scheduler-arg=feature-gates=EphemeralContainers=true@server:*' \
-  		--k3s-arg '--kubelet-arg=feature-gates=EphemeralContainers=true@agent:*' \
-		--wait
-	@echo "Probing until traefik CRDs are created (~60 secs)..." && export KUBECONFIG=$$(k3d kubeconfig write prefect) && \
-		while ! kubectl get crd ingressroutes.traefik.containo.us 2> /dev/null ; do sleep 10 && echo $$((i=i+10)); done
-	@echo -e "\nTo use your cluster set:\n"
-	@echo "export KUBECONFIG=$$(k3d kubeconfig write prefect)"
+kubes: kubes-minio kubes-prefect
 
 ## install minio
 kubes-minio:
@@ -31,7 +15,7 @@ kubes-minio:
 	kubectl exec deploy/minio -- mc mb -p local/minio-flows
 
 ## install kuberay operator using quickstart manifests
-kubes-ray: KUBERAY_VERSION=v0.3.0
+kubes-ray: KUBERAY_VERSION=v0.6.0
 kubes-ray:
 # install CRDs
 	kubectl apply --server-side -k "github.com/ray-project/kuberay/manifests/cluster-scope-resources?ref=${KUBERAY_VERSION}&timeout=90s"
@@ -58,7 +42,7 @@ kubes-prefect: prefect-helm-repo
 	helm upgrade --install prefect-agent prefect/prefect-agent --version=2023.09.07 \
 		--values infra/values-agent.yaml --wait --debug > /dev/null
 	@echo -e "\nProbing for the prefect API to be available (~30 secs)..." && \
-		while ! curl -fsS http://localhost:4200/api/admin/version ; do sleep 5; done && echo
+		while ! curl -fsS http://localhost:4200/api/admin/version ; do kubectl port-forward service/prefect-server 4200:4200 & ; done && echo
 
 ## restart prefect server (delete all flows)
 server-restart:
@@ -73,11 +57,12 @@ prefect-job-manifest:
 	prefect kubernetes manifest flow-run-job
 
 ## run parameterised flow
+param-flow: export PREFECT_API_URL=http://localhost/api
 param-flow: $(venv)
 	$(venv)/bin/python -m flows.param_flow
 
 ## run dask flow
-dask-flow: export PREFECT_API_URL=http://localhost:4200/api
+dask-flow: export PREFECT_API_URL=http://localhost/api
 dask-flow: $(venv)
 	$(venv)/bin/python -m flows.dask_flow
 
@@ -85,7 +70,7 @@ dask-flow: $(venv)
 ray-flow: export PREFECT_LOCAL_STORAGE_PATH=/tmp/prefect/storage # see https://github.com/PrefectHQ/prefect-ray/issues/26
 # PREFECT_API_URL needs to be accessible from the process running the flow and within the ray cluster
 # to make this work locally, add 127.0.0.1 prefect-server to /etc/hosts TODO: find a better fix
-ray-flow: export PREFECT_API_URL=http://prefect-server:4200/api
+dask-flow: export PREFECT_API_URL=http://localhost/api
 ray-flow: $(venv)
 	$(venv)/bin/python -m flows.ray_flow
 
@@ -98,16 +83,26 @@ publish:
 	docker buildx bake --push
 
 ## deploy flows to run on kubernetes
-deploy: export PREFECT_API_URL=http://localhost:4200/api
+deploy: export PREFECT_API_URL=http://localhost/api
 deploy: export AWS_ACCESS_KEY_ID=minioadmin
 deploy: export AWS_SECRET_ACCESS_KEY=minioadmin
 deploy: $(venv) publish
+	kubectl port-forward service/prefect-server 4200:4200 > /dev/null &
+	kubectl port-forward service/minio 9000:9000 > /dev/null &
+	kubectl port-forward service/minio 9001:9001 > /dev/null &
+	kubectl port-forward service/raycluster-complete-head-svc 6379:6379 > /dev/null &
+	kubectl port-forward service/raycluster-complete-head-svc 8265:8265 > /dev/null &
+	kubectl port-forward service/raycluster-complete-head-svc 10001:10001 > /dev/null &
+
 # use minio as the s3 remote file system & deploy flows via python
 	set -e && . config/fsspec-env.sh && $(venv)/bin/python -m flows.deploy
 # deploy flows via prefect.yaml
 	$(venv)/bin/prefect --no-prompt deploy --all
 	$(venv)/bin/prefect deployment ls
-	for deployment in param/yaml retry/yaml dask-kubes/python parent/python; do $(venv)/bin/prefect deployment run $$deployment; done
+	for deployment in param/yaml retry/yaml dask-kubes/python parent/python; do
+		@echo deployment run $$deployment
+		$(venv)/bin/prefect deployment run $$deployment;
+	done
 	$(venv)/bin/prefect flow-run ls
 	@echo Visit http://localhost:4200
 
