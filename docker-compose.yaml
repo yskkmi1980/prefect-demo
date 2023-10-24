@@ -1,6 +1,6 @@
 services:
   app:
-    image: localhost:32000/flow:latest
+    image: localhost:32000/flow:registry
     build:
       context: .
       dockerfile: Dockerfile

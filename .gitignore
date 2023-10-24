@@ -14,4 +14,6 @@ typings/
 pip-wheel-metadata/
 node_modules/
 .venv/
+.venv.local/
+.venv.multipass/
 dask-worker-space/

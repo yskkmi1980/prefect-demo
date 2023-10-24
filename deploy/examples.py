@@ -5,15 +5,15 @@ See https://docs.prefect.io/2.13.0/concepts/deployments/#create-a-deployment-fro
 from prefect.deployments.deployments import Deployment
 from prefect.infrastructure import KubernetesJob
 
-import flows.child_flow
-import flows.dask_kubes_flow
-import flows.param_flow
-import flows.parent_flow
-import flows.storage
+import examples.child_flow
+import examples.dask_kubes_flow
+import examples.param_flow
+import examples.parent_flow
+import tools.storage
 
 dask_kubes: Deployment = Deployment.build_from_flow(
     name="python",
-    flow=flows.dask_kubes_flow.dask_kubes,
+    flow=examples.dask_kubes_flow.dask_kubes,
     # output to disk is optional, but we save the yaml representation so we can compare across versions
     output="deployments/deployment-dask-kubes.yaml",
     description="dask kubes",
@@ -63,20 +63,15 @@ aws_creds_customizations = [
 
 parent: Deployment = Deployment.build_from_flow(
     name="python",
-    flow=flows.parent_flow.parent,
+    flow=examples.parent_flow.parent,
     output="deployments/deployment-parent.yaml",
     description="deployment using s3 storage",
     version="snapshot",
-    # example of adding tags
     tags=["s3"],
-    # must run on an agent because workers only support local storage
-    # see https://github.com/PrefectHQ/prefect/discussions/10277
     work_pool_name="default-agent-pool",
-    # every deployment will overwrite the files in this location
-    storage=flows.storage.minio_flows(),
+    storage=tools.storage.minio_flows(),
     path="parent",
     infrastructure=KubernetesJob(),  # type: ignore
-    # TODO: example that uses job_variables
     infra_overrides=dict(
         image="prefect-registry:5000/flow:latest",
         image_pull_policy="Always",
@@ -89,7 +84,7 @@ parent: Deployment = Deployment.build_from_flow(
 
 child: Deployment = Deployment.build_from_flow(
     name="python",
-    flow=flows.child_flow.child,
+    flow=examples.child_flow.child,
     output="deployments/deployment-child.yaml",
     description="deployment using local storage",
     version="snapshot",
@@ -106,7 +101,7 @@ child: Deployment = Deployment.build_from_flow(
 
 def apply(deployment: Deployment) -> None:
     did = deployment.apply()
-    print(f"Created deployment '{deployment.flow_name}/{deployment.name}' ({did})")
+    print(f"Created deployment 'examples/{deployment.flow_name}/{deployment.name}' ({did})")
 
 
 if __name__ == "__main__":

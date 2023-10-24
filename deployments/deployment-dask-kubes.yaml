@@ -61,7 +61,7 @@ flow_name: dask-kubes
 manifest_path: null
 storage: null
 path: /opt/prefect/flows
-entrypoint: flows/dask_kubes_flow.py:dask_kubes
+entrypoint: examples/dask_kubes_flow.py:dask_kubes
 parameter_openapi_schema:
   title: Parameters
   type: object
@@ -75,5 +75,5 @@ parameter_openapi_schema:
   required:
   - names
   definitions: null
-timestamp: '2023-09-10T03:10:36.658775+00:00'
+timestamp: '2023-10-24T10:21:18.978584+00:00'
 triggers: []

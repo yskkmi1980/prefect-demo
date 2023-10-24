@@ -11,7 +11,7 @@ deployments:
     version: snapshot
     tags: ["s3"]
     description: deployment pulling from s3
-    entrypoint: flows/param_flow.py:param
+    entrypoint: examples/param_flow.py:param
     parameters:
       i: 1
     work_pool:
@@ -50,7 +50,7 @@ deployments:
   - name: yaml
     version: snapshot
     description: deployment with flow inside docker container
-    entrypoint: flows/retry_flow.py:retry
+    entrypoint: examples/retry_flow.py:retry
     work_pool:
       name: kubes-pool
       job_variables:

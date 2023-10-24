@@ -22,7 +22,7 @@
 eg:
 
 ```
-$ prefect deployment build flows/param_flow.py:increment -n my-deployment -i kubernetes-job
+$ prefect deployment build examples/param_flow.py:increment -n my-deployment -i kubernetes-job
 Found flow 'increment'
 Default '.prefectignore' file written to /Users/tekumara/code/prefect-demo/.prefectignore
 Deployment YAML created at '/Users/tekumara/code/prefect-demo/increment-deployment.yaml'.
@@ -62,7 +62,7 @@ For example:
 
 ```python
 deployment = Deployment.build_from_flow(
-   flow=flows.param_flow.increment,
+   flow=examples.param_flow.increment,
    name="s3-deployment",
 
    # Deployment class args

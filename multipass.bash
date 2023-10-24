@@ -51,7 +51,7 @@ _create_instance() {
     multipass restart ${NAME}
     _error_msg $? "ERROR: failed to multipass restart ${NAME}"
 
-    sleep 10
+    sleep 30
 
     multipass mount ./ ${NAME}:/home/ubuntu/prefect-demo
     _error_msg $? "ERROR: failed to multipass mount ${NAME}"

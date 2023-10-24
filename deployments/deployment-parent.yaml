@@ -76,18 +76,18 @@ storage:
   bucket_path: minio-flows
   aws_access_key_id: null
   aws_secret_access_key: null
-  _is_anonymous: false
+  _block_document_id: 12ea0adf-effe-4a2b-beca-210e7acb075a
   _block_document_name: minio-flows
-  _block_document_id: d203fee4-a18a-4c7e-8c11-717d4d68d4b9
+  _is_anonymous: false
   block_type_slug: s3
   _block_type_slug: s3
 path: parent
-entrypoint: flows/parent_flow.py:parent
+entrypoint: examples/parent_flow.py:parent
 parameter_openapi_schema:
   title: Parameters
   type: object
   properties: {}
   required: null
   definitions: null
-timestamp: '2023-09-10T03:10:37.125300+00:00'
+timestamp: '2023-10-24T10:21:19.249814+00:00'
 triggers: []

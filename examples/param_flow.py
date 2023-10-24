@@ -3,7 +3,7 @@ from prefect.futures import PrefectFuture
 from prefect.states import State
 from prefect.utilities.asyncutils import Sync
 
-import flows.another_module
+import examples.another_module
 
 
 @task
@@ -36,7 +36,7 @@ def param(i: int) -> PrefectFuture[int, Sync]:
 
     # show in prefect logs/UI
     logger.info("Hello Prefect logs!")
-    logger.info(flows.another_module.msg)
+    logger.info(examples.another_module.msg)
     logger.info(f"{i=}")
 
     number = add_one.submit(i)
@@ -49,7 +49,7 @@ def param(i: int) -> PrefectFuture[int, Sync]:
 
     # despite this failing task, this flow's final state will be "completed" (ie: success),
     # because we return a future from the flow
-    fail.submit()
+    # fail.submit()
 
     # return the number future, which determines the final state of the flow
     # see https://docs.prefect.io/concepts/states/#final-state-determination

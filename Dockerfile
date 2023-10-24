@@ -14,4 +14,6 @@ COPY config/fsspec-minio.json config/fsspec.json
 ENV FSSPEC_CONFIG_DIR=/opt/prefect/config
 
 # add flows so they can be used by deployments with no storage
+COPY examples examples
 COPY flows flows
+COPY tools tools

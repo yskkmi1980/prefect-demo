@@ -1,7 +1,7 @@
 ###
-### A complete description of a Prefect Deployment for flow 'child'
+### A complete description of a Prefect Deployment for flow 'hello-flow'
 ###
-name: python
+name: local
 description: deployment using local storage
 version: snapshot
 # The work queue that will handle this deployment's runs
@@ -10,9 +10,9 @@ work_pool_name: kubes-pool
 tags: []
 parameters: {}
 schedule: null
-is_schedule_active: null
+is_schedule_active: true
 infra_overrides:
-  image: prefect-registry:5000/flow:latest
+  image: localhost:32000/flow:latest
   image_pull_policy: Always
   service_account_name: prefect-flows
   finished_job_ttl: 300
@@ -52,16 +52,16 @@ infrastructure:
 ###
 ### DO NOT EDIT BELOW THIS LINE
 ###
-flow_name: child
+flow_name: hello-flow
 manifest_path: null
 storage: null
 path: /opt/prefect/flows
-entrypoint: examples/child_flow.py:child
+entrypoint: flows/hello.py:hello_flow
 parameter_openapi_schema:
   title: Parameters
   type: object
   properties: {}
   required: null
   definitions: null
-timestamp: '2023-10-24T10:21:23.323461+00:00'
+timestamp: '2023-10-25T14:19:34.780452+00:00'
 triggers: []

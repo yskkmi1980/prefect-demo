@@ -3,7 +3,7 @@ import pytest
 from prefect import State
 from prefect.server.schemas.states import StateType
 
-from flows.param_flow import add_one, param
+from examples.param_flow import add_one, param
 
 
 @pytest.fixture(scope="session")
