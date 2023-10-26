@@ -12,6 +12,6 @@ def download_flow_task(url: str) -> None:
     return json
 
 
-@flow(name="Call API", log_prints=True)
-def execute_task_flow(url: str = "http://localhost:8080/api/flows/") -> None:
+@flow(name="task-flow", log_prints=True)
+def task_flow(url: str = "http://localhost:8080/api/flows/") -> None:
     download_flow_task(url)

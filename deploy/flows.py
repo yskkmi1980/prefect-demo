@@ -6,6 +6,7 @@ from prefect.deployments.deployments import Deployment
 from prefect.infrastructure import KubernetesJob
 
 import flows.hello
+import flows.task
 import tools.storage
 
 # read aws creds from the minio secret
@@ -80,6 +81,47 @@ hello_local_deployment: Deployment = Deployment.build_from_flow(
     ),
 )
 
+task_minio_deployment: Deployment = Deployment.build_from_flow(
+    name="minio",
+    flow=flows.task.task_flow,
+    output="deployments/deployment-task-minio.yaml",
+    description="deployment using s3 storage",
+    version="snapshot",
+    # example of adding tags
+    tags=["s3"],
+    # must run on an agent because workers only support local storage
+    # see https://github.com/PrefectHQ/prefect/discussions/10277
+    work_pool_name="default-agent-pool",
+    # every deployment will overwrite the files in this location
+    storage=tools.storage.minio_flows(),
+    path="flows/task",
+    infrastructure=KubernetesJob(),  # type: ignore
+    infra_overrides=dict(
+        image="localhost:32000/flow:latest",
+        image_pull_policy="Always",
+        customizations=aws_creds_customizations,
+        service_account_name="prefect-flows",
+        finished_job_ttl=300,
+    ),
+)
+
+
+task_local_deployment: Deployment = Deployment.build_from_flow(
+    name="local",
+    flow=flows.task.task_flow,
+    output="deployments/deployment-task-local.yaml",
+    description="deployment using local storage",
+    version="snapshot",
+    work_pool_name="kubes-pool",
+    infrastructure=KubernetesJob(),
+    infra_overrides=dict(
+        image="localhost:32000/flow:latest",
+        image_pull_policy="Always",
+        service_account_name="prefect-flows",
+        finished_job_ttl=300,
+    ),
+)
+
 
 def apply(deployment: Deployment) -> None:
     did = deployment.apply()
@@ -89,3 +131,5 @@ def apply(deployment: Deployment) -> None:
 if __name__ == "__main__":
     apply(hello_minio_deployment)
     apply(hello_local_deployment)
+    apply(task_minio_deployment)
+    apply(task_local_deployment)
