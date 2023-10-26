@@ -26,12 +26,6 @@ kubes-ray:
 	kubectl apply -f infra/ray-cluster.complete.yaml 1>/dev/null
 	kubectl apply -f infra/lb-ray.yaml 1>/dev/null
 
-	@echo -e "\nProbing for the ray cluster to be available (~3 mins)..." &&
-	while ! $(venv)/bin/python -m tools.ping_ray; do
-		sleep 10
-		kubectl port-forward service/raycluster-complete-head-svc 10001:10001 1>/dev/null &
-	done
-
 ## upgrade prefect helm chart repo
 prefect-helm-repo:
 	helm repo add prefect https://prefecthq.github.io/prefect-helm 1>/dev/null
@@ -48,12 +42,6 @@ kubes-prefect: prefect-helm-repo
 		--values infra/values-worker.yaml --wait 1>/dev/null
 	helm upgrade --install prefect-agent prefect/prefect-agent --version=2023.09.07 \
 		--values infra/values-agent.yaml --wait  1>/dev/null
-
-	@echo -e "\nProbing for the prefect API to be available (~30 secs)..."
-	while ! curl -fsS http://localhost:4200/api/admin/version ; do
-		sleep 10
-		kubectl port-forward service/prefect-server 4200:4200 1>/dev/null &
-	done
 
 ## restart prefect server (delete all flows)
 server-restart:
