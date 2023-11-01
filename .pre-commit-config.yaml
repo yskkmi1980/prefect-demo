@@ -22,20 +22,3 @@ repos:
         entry: .venv/bin/flake8
         language: system
         types: [python]
-  # these hooks require the project's virtualenv
-  - repo: local
-    hooks:
-      - id: pyright
-        name: pyright
-        entry: make pyright
-        # run on all files
-        pass_filenames: false
-        language: system
-        types: [python]
-      - id: test
-        name: test
-        entry: make test
-        # run on all files
-        pass_filenames: false
-        language: system
-        types: [python]

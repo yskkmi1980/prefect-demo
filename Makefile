@@ -80,7 +80,6 @@ sub-flow: $(venv)
 ## build and push docker image
 publish:
 	docker buildx bake --push
-	docker push localhost:32000/flow
 
 port-foward:
 	kubectl port-forward service/prefect-server 4200:4200 1>/dev/null &
@@ -117,6 +116,8 @@ deploy: $(venv) port-foward publish
 	$(venv)/bin/prefect deployment ls
 	$(venv)/bin/prefect deployment run "hello-flow/local"
 	$(venv)/bin/prefect deployment run "hello-flow/minio"
+	$(venv)/bin/prefect deployment run "task-flow/local"
+	$(venv)/bin/prefect deployment run "task-flow/minio"
 	$(venv)/bin/prefect flow-run ls
 
 
