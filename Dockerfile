@@ -6,6 +6,10 @@ FROM prefecthq/prefect:2.13.0-python3.10
 # bokeh is needed for the dask dashboard
 RUN pip install --no-cache-dir bokeh==2.4.3 dask_kubernetes==2023.6.1 prefect-dask==0.2.4 s3fs==2023.6.0 prefect-aws==0.3.6
 
+COPY modules/common /modules/common
+WORKDIR /modules/common
+RUN pip install -r requirements.txt && pip install ./
+
 # explicitly specify workdir expected by the deployment (even though its the same as the base image)
 WORKDIR /opt/prefect
 
