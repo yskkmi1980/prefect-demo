@@ -1,4 +1,4 @@
-# Prefect Demo
+# TG-FLOW (Prefect Demo)
 
 Prefect 2 (aka Orion) examples running self-contained in a local kubernetes cluster. Batteries (mostly) included. 🔋
 
@@ -60,6 +60,9 @@ make kubes
 Create deployments that run on kubernetes
 
 ```
+# deploy ./examples flows
+make deploy-example
+# deploy ./flows flows
 make deploy
 ```
 
