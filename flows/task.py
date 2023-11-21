@@ -5,7 +5,8 @@ from prefect.states import State
 from tg.cloud.task.context import WorkflowContext
 from tg.cloud.task.datagram import Task, Work
 from tg.cloud.task.factory import AbsTask
-from tg.cloud.task.sample import ATaskFactory
+
+from .factory import TaskFactory
 
 # https://docs.prefect.io/2.14.2/concepts/task-runners/
 
@@ -14,7 +15,7 @@ from tg.cloud.task.sample import ATaskFactory
 def create_work_context(target: ParseResult) -> WorkflowContext:
     logger = get_run_logger()
     logger.info("create_work_context")
-    context = WorkflowContext.get(target, ATaskFactory())
+    context = WorkflowContext.get(target, TaskFactory())
     logger.info("create_work_context.update")
     context.update(Work.Status.Progress)
     logger.info("create_work_context.endl")
