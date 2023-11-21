@@ -17,3 +17,4 @@ node_modules/
 .venv.local/
 .venv.multipass/
 dask-worker-space/
+.history
