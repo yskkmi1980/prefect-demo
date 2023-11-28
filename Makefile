@@ -43,6 +43,27 @@ kubes-prefect: prefect-helm-repo
 	helm upgrade --install prefect-agent prefect/prefect-agent --version=2023.09.07 \
 		--values infra/values-agent.yaml --wait  1>/dev/null
 
+deploy-task-secret:
+	@echo "install postgres"
+	kubectl apply -f infra/task-config.yaml
+
+deploy-postgres:
+	@echo "install postgres"
+	kubectl apply -f infra/task-postgresql.yaml
+	
+deploy-task-app:
+	@echo "deploy tg-task-app"
+	kubectl apply -f infra/task-app.yaml
+
+deploy-task-register:
+	@echo "deploy tg-task-register"
+	kubectl apply -f infra/task-register.yaml
+
+kubes-task-csu:
+	kubectl exec -it $$(kubectl get po | grep tg-task-app | awk '{print $$1}') python3 manage.py createsuperuser
+
+kubes-task-app:deploy-task-secret deploy-postgres deploy-task-app deploy-task-register kubes-task-csu
+
 ## restart prefect server (delete all flows)
 server-restart:
 	kubectl rollout restart deploy/prefect-server
@@ -88,6 +109,8 @@ port-foward:
 	kubectl port-forward service/raycluster-complete-head-svc 6379:6379 1>/dev/null &
 	kubectl port-forward service/raycluster-complete-head-svc 8265:8265 1>/dev/null &
 	kubectl port-forward service/raycluster-complete-head-svc 10001:10001 1>/dev/null &
+	kubectl port-forward deploy/tg-task 8000:8000 1>/dev/null &
+
 
 deploy-example: export PREFECT_API_URL=http://localhost/api
 deploy-example: export AWS_ACCESS_KEY_ID=minioadmin

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tg-task-secret
+type: Opaque
+data:
+  DJANGO_DB_PASSWORD: "dGVzdA=="
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tg-task-config
+data:
+  DJANGO_DATABASE: "postgres"
+  DJANGO_DB_ENGINE: "django.db.backends.postgresql_psycopg2"
+  DJANGO_DB_NAME: "postgres"
+  DJANGO_DB_USER: "postgres"
+  DJANGO_DB_HOST: "tg-task-postgres"
+  DJANGO_DB_PORT: "5432"

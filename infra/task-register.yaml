@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tg-task-register
+  labels:
+    app: tg-task-register
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tg-task-register
+  template:
+    metadata:
+      labels:
+        app: tg-task-register
+    spec:
+      containers:
+        - image: localhost:32000/tg-task:latest
+          name: tg-task-register
+          env:
+            - name: ENABLE_TASK_REGISTER_SCHEDULER
+              value: "True"
+            - name: DJANGO_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: tg-task-config
+                  key: DJANGO_DATABASE
+            - name: DJANGO_DB_ENGINE
+              valueFrom:
+                configMapKeyRef:
+                  name: tg-task-config
+                  key: DJANGO_DB_ENGINE
+            - name: DJANGO_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: tg-task-config
+                  key: DJANGO_DB_NAME
+            - name: DJANGO_DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: tg-task-config
+                  key: DJANGO_DB_USER
+            - name: DJANGO_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tg-task-secret
+                  key: DJANGO_DB_PASSWORD
+            - name: DJANGO_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: tg-task-config
+                  key: DJANGO_DB_HOST
+            - name: DJANGO_DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: tg-task-config
+                  key: DJANGO_DB_PORT
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tg-task-register
+spec:
+  selector:
+    app: tg-task-register
+  ports:
+    - port: 8000
+      targetPort: 8000
