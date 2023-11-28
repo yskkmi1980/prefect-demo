@@ -12,7 +12,8 @@ class SimpleTask(AbsTask):
         logger.debug(self.context.provider)
         logger.debug(self.context.client)
         logger.debug(self.task.instance)
+        return {}
 
-    def post(self):
+    def post(self) -> None:
         logger = self.context.logger
         logger.info("ATask.execute.post")
